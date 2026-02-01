@@ -1,0 +1,162 @@
+
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mestre da Poupança Pro - 20 Desafios</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        :root { --primary: #2563eb; --secondary: #f59e0b; --success: #10b981; --danger: #ef4444; --bg: #f8fafc; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: white; width: 95%; max-width: 850px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .status-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #eef2ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-weight: 600; border: 1px solid #c7d2fe; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #1e3a8a; }
+        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+        .choice-btn { width: 100%; padding: 16px; margin: 10px 0; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.2s; }
+        .choice-btn:hover { background: #eff6ff; transform: translateY(-1px); }
+        .correct { background: var(--success) !important; color: white !important; border-color: #065f46 !important; }
+        .wrong { background: var(--danger) !important; color: white !important; border-color: #991b1b !important; }
+        .feedback { margin-top: 15px; padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.5; border: 1px solid transparent; font-weight: 500; }
+        .btn-next { background: var(--secondary); color: white; border: none; padding: 14px 40px; border-radius: 10px; cursor: pointer; font-weight: 700; margin-top: 20px; display: block; margin-left: auto; margin-right: auto; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="start-screen">
+        <h1>🚀 Mestre da Poupança: Edição Pro</h1>
+        <div style="background: #fff9db; padding: 15px; border-radius: 10px; border: 1px solid #fab005; margin-bottom: 20px;">
+            <p style="margin: 0; color: #856404; font-weight: 600; text-align: center;">
+                📢 MISSÃO: O vosso objetivo é poupar o máximo possível e usar as melhores estratégias de investimento. 
+                Atenção: A falta de um Fundo de Emergência resultará em multas pesadas caso surjam imprevistos!
+            </p>
+        </div>
+        <div class="input-group"><label>Nome da Equipa:</label><input type="text" id="teamName"></div>
+        <div class="input-group"><label>Membro 1:</label><input type="text" id="m1"></div>
+        <div class="input-group"><label>Membro 2:</label><input type="text" id="m2"></div>
+        <div class="input-group"><label>Membro 3 (Opcional):</label><input type="text" id="m3"></div>
+        <div class="input-group"><label>Turma:</label><input type="text" id="turma"></div>
+        <button class="choice-btn" style="background: var(--primary); color: white;" onclick="startGame()">Iniciar Simulação</button>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div class="status-bar">
+            <div>Saldo: <span id="val-saldo">1000</span>€</div>
+            <div>Meta: <span id="val-meta">0</span>€</div>
+            <div>Tempo: <span id="timer">00:00</span></div>
+        </div>
+        <h3 id="question-text"></h3>
+        <div id="choices"></div>
+        <div id="feedback" class="feedback hidden"></div>
+        <button id="next-btn" class="btn-next hidden" onclick="nextQuestion()">Avançar</button>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <h1>📊 Relatório Final Detalhado</h1>
+        <div id="final-stats" style="background: #f1f5f9; padding: 25px; border-radius: 15px; border: 1px solid #cbd5e1;"></div>
+        <p id="mail-status" style="text-align: center; font-weight: 600; margin-top: 20px;"></p>
+    </div>
+</div>
+
+<script>
+    (function(){ emailjs.init("d9d86G7bDE1WQ8eDy"); })();
+
+    let saldo = 1000, meta = 0, currentQ = 0, score = 0, startTime, timerInterval;
+    let taxaJuro = 0.01, temFundoEmergencia = false;
+
+    const desafios = [
+        { q: "1. Escolha a sua Meta Financeira (O objetivo é poupar o máximo acima disto):", options: [{ t: "Computador Gaming (1500€)", meta: 1500, score: 1, f: "Boa escolha. Requer disciplina." }, { t: "Fundo Faculdade (3000€)", meta: 3000, score: 1, f: "Excelente meta de longo prazo!" }] },
+        { q: "2. Estratégia Inicial: Como vão gerir os 1000€ iniciais?", options: [{ t: "500€ em Emergência e 500€ para a Meta.", fe: true, effect: 0, score: 1, f: "Correto! O Fundo de Emergência evita multas por resgate antecipado." }, { t: "1000€ direto para a Meta.", fe: false, effect: 0, score: 0, f: "Atenção: Ficou vulnerável a penalizações por imprevistos!" }] },
+        { q: "3. Onde aplicar o capital para maximizar o saldo final?", options: [{ t: "Conta à Ordem (0,5% juros)", taxa: 0.005, score: 0, f: "Má escolha. O dinheiro quase não cresce." }, { t: "Certificados de Aforro (Média 4% anual)", taxa: 0.04, score: 1, f: "Boa! O juro acumulado fará o dinheiro trabalhar para si." }] },
+        { q: "4. Literacia I: O que é o Custo de Oportunidade?", options: [{ t: "Aquilo que abdico ao escolher algo.", effect: 250, score: 1, f: "Certo! Bónus de 250€." }, { t: "O valor total gasto numa compra.", effect: 0, score: 0, f: "Errado. Perdeu o prémio." }] },
+        { q: "5. Hábitos Mensais: Como vão gerir o consumo extra?", options: [{ t: "Poupar 60€/mês cortando no lazer supérfluo.", effect: 720, score: 1, f: "Poupança anual de 720€ garantida!" }, { t: "Gastar conforme a vontade.", effect: 0, score: 0, f: "A poupança ficou parada." }] },
+        { q: "6. Juros Compostos: O banco oferece bónus se não mexer no saldo.", options: [{ t: "Manter o capital investido sem resgates.", bónus: 1.1, score: 1, f: "Excelente! O saldo cresceu 10% extra." }, { t: "Levantar 300€ para compras imediatas.", effect: -300, bónus: 1, score: 0, f: "Perdeu o bónus de fidelidade." }] },
+        { q: "7. Literacia II: O que é um Ativo?", options: [{ t: "Algo que põe dinheiro no meu bolso.", effect: 150, score: 1, f: "Certo! Bónus de 150€." }, { t: "Qualquer objeto que eu possua.", effect: 0, score: 0, f: "Errado." }] },
+        { q: "8. Mercado Financeiro: Diversificar 200€ num ETF?", options: [{ t: "Sim, investir (Ganho potencial 100€).", effect: 100, score: 1, f: "Sucesso no mercado!" }, { t: "Não arriscar nada.", effect: 0, score: 0, f: "Manteve a segurança mas não lucrou." }] },
+        { q: "9. IMPREVISTO: Avaria urgente no telemóvel (Custo 200€).", options: [{ t: "Usar Fundo de Emergência ou Saldo.", useFE: true, effect: -200, score: 1, f: "Se tinha Fundo, pagou apenas o custo. Se não tinha, pagou multa de resgate antecipado!" }] },
+        { q: "10. Freelance: Trabalho extra rendeu 300€.", options: [{ t: "Investir 100% na Meta.", effect: 300, score: 1, f: "Excelente reforço!" }, { t: "Gastar metade.", effect: 150, score: 0, f: "Podia ter poupado mais." }] },
+        { q: "11. Literacia III: O que significa TAEG?", options: [{ t: "Taxa Anual Encargos Efetiva Global.", effect: 200, score: 1, f: "Certo! Bónus de 200€." }, { t: "Taxa Apoio Economia Gerada.", effect: 0, score: 0, f: "Errado." }] },
+        { q: "12. Economia Circular: Venda de artigos usados.", options: [{ t: "Vender e poupar 120€.", effect: 120, score: 1, f: "Dinheiro extra para a meta!" }, { t: "Guardar tudo na garagem.", effect: 0, score: 0, f: "Capital parado." }] },
+        { q: "13. Literacia IV: O que é a Euribor?", options: [{ t: "Taxa de juro de referência bancária.", effect: 200, score: 1, f: "Certo! Bónus de 200€." }, { t: "Uma moeda digital.", effect: 0, score: 0, f: "Errado." }] },
+        { q: "14. QUAL O MELHOR MÉTODO para fazer crescer o dinheiro a longo prazo?", options: [{ t: "Juros Compostos (Juro sobre Juro).", taxaExtra: 0.05, score: 1, f: "Brilhante! O efeito exponencial é o melhor amigo do poupador." }, { t: "Juros Simples (Sobre o capital inicial).", taxaExtra: 0, score: 0, f: "Escolha errada. O crescimento é muito mais lento." }] },
+        { q: "15. Cálculo I: 4% de juro anual sobre 1000€ dá quanto ao fim de 1 ano?", options: [{ t: "40€", effect: 100, score: 1, f: "Certo! Prémio de cálculo de 100€." }, { t: "4€", effect: 0, score: 0, f: "Erro de cálculo." }] },
+        { q: "16. Gestão Fiscal: Recebeu reembolso de IRS (300€).", options: [{ t: "Reinvestir na meta.", effect: 300, score: 1, f: "Certo! Aproveitou o capital." }, { t: "Gastar tudo hoje.", effect: 0, score: 0, f: "Perdeu a oportunidade." }] },
+        { q: "17. Literacia V: O que é um perfil conservador?", options: [{ t: "Privilegia segurança e baixo risco.", effect: 150, score: 1, f: "Certo! Bónus de 150€." }, { t: "Arrisca tudo em cripto.", effect: 0, score: 0, f: "Errado." }] },
+        { q: "18. Decisão de Risco: Diversificar ou Concentrar?", options: [{ t: "Diversificar (Dividir o risco).", effect: 200, score: 1, f: "Sábio! Protegeu o seu capital." }, { t: "Concentrar tudo.", effect: 0, score: 0, f: "Muito arriscado." }] },
+        { q: "19. Cálculo II: Se poupar 100€/mês durante 1 ano, quanto tem (sem juros)?", options: [{ t: "1200€", effect: 200, score: 1, f: "Cálculo correto! Bónus de 200€." }, { t: "1000€", effect: 0, score: 0, f: "Erro de cálculo." }] },
+        { q: "20. MOMENTO FINAL: Aplicar rendimentos totais acumulados.", options: [{ t: "Ver Balanço e Juros Finais.", aplicarFinal: true, score: 1, f: "Verificando se atingiu o máximo de poupança..." }] }
+    ];
+
+    function startGame() {
+        if(!document.getElementById('teamName').value || !document.getElementById('m1').value || !document.getElementById('m2').value) return alert("Mínimo 2 membros!");
+        document.getElementById('start-screen').classList.add('hidden'); document.getElementById('game-screen').classList.remove('hidden');
+        startTime = Date.now(); timerInterval = setInterval(updateTimer, 1000); showQuestion();
+    }
+
+    function updateTimer() {
+        let diff = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById('timer').innerText = `${Math.floor(diff/60).toString().padStart(2,'0')}:${(diff%60).toString().padStart(2,'0')}`;
+    }
+
+    function showQuestion() {
+        const q = desafios[currentQ]; document.getElementById('question-text').innerText = q.q;
+        const div = document.getElementById('choices'); div.innerHTML = '';
+        document.getElementById('feedback').classList.add('hidden'); document.getElementById('next-btn').classList.add('hidden');
+        q.options.forEach((o, i) => { const b = document.createElement('button'); b.className = 'choice-btn'; b.innerText = o.t; b.onclick = () => makeChoice(i); div.appendChild(b); });
+    }
+
+    function makeChoice(idx) {
+        const q = desafios[currentQ], o = q.options[idx], btns = document.querySelectorAll('.choice-btn');
+        btns.forEach(b => b.disabled = true);
+        if(o.meta) meta = o.meta; if(o.fe !== undefined) temFundoEmergencia = o.fe; if(o.taxa) taxaJuro = o.taxa; if(o.taxaExtra) taxaJuro += o.taxaExtra; if(o.bónus) saldo *= o.bónus;
+        
+        if(o.useFE !== undefined) {
+            if(!temFundoEmergencia) {
+                const multa = Math.abs(o.effect) * 0.15;
+                saldo += (o.effect - multa);
+                o.f = `🚨 MULTA! Como não tinha Fundo de Emergência, pagou os 200€ + uma multa de resgate antecipado de ${multa}€!`;
+            } else {
+                saldo += o.effect; o.f = "Fundo de Emergência utilizado. Saldo da meta protegido contra multas!";
+            }
+        } else if(o.aplicarFinal) {
+            saldo = saldo * (1 + taxaJuro);
+            o.f = saldo >= meta ? "🏆 EXCELENTE! A vossa poupança foi maximizada com sucesso!" : "Poupou, mas poderia ter arriscado mais na literacia e juros.";
+        } else if(typeof o.effect === 'number') { saldo += o.effect; }
+
+        o.score > 0 ? (btns[idx].classList.add('correct'), score++) : btns[idx].classList.add('wrong');
+        document.getElementById('val-saldo').innerText = Math.round(saldo);
+        document.getElementById('val-meta').innerText = meta;
+        const feed = document.getElementById('feedback'); feed.innerText = o.f || "Decisão registada.";
+        feed.classList.remove('hidden'); feed.style.backgroundColor = o.score > 0 ? "#ecfdf5" : "#fef2f2";
+        document.getElementById('next-btn').classList.remove('hidden');
+    }
+
+    function nextQuestion() { (currentQ < desafios.length - 1) ? (currentQ++, showQuestion()) : finishGame(); }
+
+    function finishGame() {
+        clearInterval(timerInterval); document.getElementById('game-screen').classList.add('hidden'); document.getElementById('result-screen').classList.remove('hidden');
+        const tempo = document.getElementById('timer').innerText, win = saldo >= meta;
+        document.getElementById('final-stats').innerHTML = `
+            <p><strong>Equipa:</strong> ${document.getElementById('teamName').value}</p>
+            <p><strong>Meta:</strong> ${meta}€ | <strong>Saldo Final:</strong> ${Math.round(saldo)}€</p>
+            <p><strong>Taxa Final:</strong> ${(taxaJuro*100).toFixed(1)}% | <strong>Pontos:</strong> ${score}/20</p>
+            <h2 style="color: ${win?'green':'red'}">${win ? "🎯 META ATINGIDA!" : "❌ META NÃO ALCANÇADA"}</h2>
+        `;
+        sendEmail(tempo, win);
+    }
+
+    function sendEmail(t, res) {
+        emailjs.send('service_wi13tin', 'template_zzphn2m', {
+            to_email: 'ana.silva.430@aemlaranjeira.pt', team_name: document.getElementById('teamName').value,
+            members: `${document.getElementById('m1').value}, ${document.getElementById('m2').value}, ${document.getElementById('m3').value}`,
+            turma: document.getElementById('turma').value, score: score, time: t, saldo: Math.round(saldo), meta: meta, result: res ? "ATINGIDA" : "NÃO ATINGIDA"
+        });
+    }
+</script>
+</body>
+</html>
